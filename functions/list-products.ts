@@ -20,7 +20,6 @@ const getSecret = async (secretName: string): Promise<string | undefined> => {
   throw new Error("Secret not found");
 };
 
-// @ts-ignore
 const DATABASE_URL = await getSecret("DATABASE_URL");
 
 const sql = neon(DATABASE_URL!);
