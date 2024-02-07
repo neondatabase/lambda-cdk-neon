@@ -15,10 +15,10 @@ export class ServerlessApiStack extends cdk.Stack {
       {
         entry: "functions/list-products.ts",
         handler: "handler",
-        runtime: lambda.Runtime.NODEJS_18_X,
+        runtime: lambda.Runtime.NODEJS_20_X,
         bundling: {
           format: lambdaNodejs.OutputFormat.ESM,
-          target: "node18",
+          target: "node20",
           nodeModules: [
             "@neondatabase/serverless",
             "@aws-sdk/client-secrets-manager",
