@@ -1,9 +1,9 @@
-import * as cdk from 'aws-cdk-lib';
+import * as cdk from "aws-cdk-lib";
 import * as lambdaNodejs from "aws-cdk-lib/aws-lambda-nodejs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import { Construct } from 'constructs';
-import * as iam from 'aws-cdk-lib/aws-iam';
+import { Construct } from "constructs";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 export class ServerlessApiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -15,15 +15,25 @@ export class ServerlessApiStack extends cdk.Stack {
       {
         entry: "functions/list-products.ts",
         handler: "handler",
-        runtime: lambda.Runtime.NODEJS_18_X,
-      },
-    )
-    
-    listProductsFunction.addToRolePolicy(new iam.PolicyStatement({
-      effect: iam.Effect.ALLOW,
-      actions: ['secretsmanager:GetSecretValue'],
-      resources: ['*'],
-    }))
+        runtime: lambda.Runtime.NODEJS_20_X,
+        bundling: {
+          format: lambdaNodejs.OutputFormat.ESM,
+          target: "node20",
+          nodeModules: [
+            "@neondatabase/serverless",
+            "@aws-sdk/client-secrets-manager",
+          ],
+        },
+      }
+    );
+
+    listProductsFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["secretsmanager:GetSecretValue"],
+        resources: ["*"],
+      })
+    );
 
     const productServiceApi = new apigateway.RestApi(this, "Endpoint", {
       restApiName: "Product Service",
@@ -35,7 +45,9 @@ export class ServerlessApiStack extends cdk.Stack {
 
     const products = productServiceApi.root.addResource("products");
 
-    products.addMethod("GET", new apigateway.LambdaIntegration(listProductsFunction));
-
+    products.addMethod(
+      "GET",
+      new apigateway.LambdaIntegration(listProductsFunction)
+    );
   }
 }
